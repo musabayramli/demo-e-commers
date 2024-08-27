@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="az">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alış-Veriş Saytı</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>Alış-Veriş Saytı</h1>
+        <div class="cart-icon" onclick="toggleCart()">
+          🛒<span id="cart-count" class="cart-count">0</span>
+        </div>
+      </div>
+    </header>
+    <div class="sidebar">
+      <button onclick="filterProducts('all')">Bütün Məhsullar</button>
+      <button onclick="filterProducts('tech')">Texnologiya</button>
+      <button onclick="filterProducts('food')">Qida</button>
+      <button onclick="filterProducts('furniture')">Mebel</button>
+      <button onclick="filterProducts('clothing')">Geyim</button>
+    </div>
+    <main>
+      <div id="product-list" class="product-list"></div>
+    </main>
+    <div id="cart-popup" class="cart-popup">
+      <div class="cart-content">
+        <span class="close" onclick="toggleCart()">&times;</span>
+        <h2>Səbətiniz</h2>
+        <ul id="cart-items"></ul>
+        <p>Toplam: $<span id="total">0</span></p>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
