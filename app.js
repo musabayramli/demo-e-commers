@@ -238,115 +238,88 @@ const products = [
       "https://www.rockettstgeorge.co.uk/cdn/shop/products/rockettstgeorge-black-crow-table-lamp-lores.jpg?v=1683720783",
   },
 ];
-
-
-
-
-
-
-
-
-
-
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 document.addEventListener("DOMContentLoaded", () => {
-  renderProducts("all");
+  renderProducts();
   renderCart();
 });
 
-function renderProducts(category) {
+function renderProducts(category = "all") {
   const productList = document.getElementById("product-list");
-  productList.innerHTML = "";
-
-  const filteredProducts =
-    category === "all"
-      ? products
-      : products.filter((product) => product.category === category);
-
-  filteredProducts.forEach((product) => {
-    const productDiv = document.createElement("div");
-    productDiv.className = "product";
-    productDiv.innerHTML = `
-            <img src="${product.image}" alt="${product.name}">
-            <h2>${product.name}</h2>
-            <p>Qiymət: $${product.price}</p>
-            <button onclick="addToCart(${product.id})">Səbətə əlavə et</button>
-        `;
-    productList.appendChild(productDiv);
-  });
+  productList.innerHTML = products
+    .filter((p) => category === "all" || p.category === category)
+    .map(
+      (product) => `
+      <div class="product">
+        <img src="${product.image}" alt="${product.name}">
+        <h2>${product.name}</h2>
+        <p>Qiymət: $${product.price}</p>
+        <button onclick="addToCart(${product.id})">Səbətə əlavə et</button>
+      </div>`
+    )
+    .join("");
 }
 
 function addToCart(productId) {
-  const product = products.find((p) => p.id === productId);
   const existingProduct = cart.find((p) => p.id === productId);
   if (existingProduct) {
     existingProduct.quantity++;
   } else {
+    const product = products.find((p) => p.id === productId);
     cart.push({ ...product, quantity: 1 });
   }
-  saveCart();
-  renderCart();
+  saveAndRenderCart();
 }
 
 function removeFromCart(productId) {
   cart = cart.filter((p) => p.id !== productId);
-  saveCart();
-  renderCart();
+  saveAndRenderCart();
 }
 
-function increaseQuantity(index) {
-  cart[index].quantity++;
-  saveCart();
-  renderCart();
-}
-
-function decreaseQuantity(index) {
+function updateQuantity(index, delta) {
   const product = cart[index];
-  if (product.quantity > 1) {
-    product.quantity--;
-  } else {
-    cart.splice(index, 1);
-  }
-  saveCart();
-  renderCart();
+  product.quantity += delta;
+  if (product.quantity <= 0) cart.splice(index, 1);
+  saveAndRenderCart();
 }
 
 function renderCart() {
   const cartItems = document.getElementById("cart-items");
   const totalElement = document.getElementById("total");
   const cartCountElement = document.getElementById("cart-count");
-  cartItems.innerHTML = "";
-  let total = 0;
-  let itemCount = 0;
-  cart.forEach((product, index) => {
-    const li = document.createElement("li");
-    li.className = "cart-item";
-    li.innerHTML = `
-            ${product.name} - $${product.price} x ${product.quantity}
-            <div class="cart-controls">
-                <button class="decrease" onclick="decreaseQuantity(${index})">-</button>
-                <button class="increase" onclick="increaseQuantity(${index})">+</button>
-                <button onclick="removeFromCart(${product.id})">Sil</button>
-            </div>
-        `;
-    cartItems.appendChild(li);
-    total += product.price * product.quantity;
-    itemCount += product.quantity;
-  });
-  totalElement.textContent = total;
-  cartCountElement.textContent = itemCount;
+
+  const cartHtml = cart
+    .map(
+      (product, index) => `
+      <li class="cart-item">
+        ${product.name} - $${product.price} x ${product.quantity}
+        <div class="cart-controls">
+          <button class="decrease" onclick="updateQuantity(${index}, -1)">-</button>
+          <button class="increase" onclick="updateQuantity(${index}, 1)">+</button>
+          <button onclick="removeFromCart(${product.id})">Sil</button>
+        </div>
+      </li>`
+    )
+    .join("");
+
+  cartItems.innerHTML = cartHtml;
+  totalElement.textContent = cart.reduce(
+    (sum, product) => sum + product.price * product.quantity,
+    0
+  );
+  cartCountElement.textContent = cart.length; 
+}
+
+function saveAndRenderCart() {
+  localStorage.setItem("cart", JSON.stringify(cart));
+  renderCart();
 }
 
 function toggleCart() {
-  const cartPopup = document.getElementById("cart-popup");
-  cartPopup.classList.toggle("show");
+  document.getElementById("cart-popup").classList.toggle("show");
 }
 
 function filterProducts(category) {
   renderProducts(category);
-}
-
-function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
 }
